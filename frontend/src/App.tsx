@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Card from "./components/Card";
 import { cards } from "./data/cards";
@@ -18,7 +17,7 @@ export default function App() {
   return (
     <main className="game">
       <h1>SOULBOUND</h1>
-      <p>Select a card to preview it.</p>
+      <p>Choose a card to inspect it.</p>
 
       <section className="card-grid">
         {cards.map((card) => (
@@ -32,7 +31,7 @@ export default function App() {
       </section>
 
       {selectedCard && (
-        <p>
+        <p className="selected-card">
           Selected:{" "}
           {cards.find((card) => card.id === selectedCard)?.name}
         </p>

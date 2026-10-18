@@ -1,131 +1,539 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=MedievalSharp&display=swap');
+
+/* ========================================
+   SOULBOUND — Medieval Trading Card Design
+   ======================================== */
 
 .game-card {
-  width: 190px;
-  min-width: 190px;
-  height: 310px;
-  padding: 10px;
+  --frame: #88735b;
+  --frame-dark: #292522;
+  --accent: #cbb18a;
+  --paper: #cbbca1;
+  --paper-text: #17130f;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 5 / 7;
+  padding: 8px;
+
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: stretch;
 
-  color: #eee8df;
-  background: #17151b;
-  border: 2px solid #514650;
-  border-radius: 12px;
+  color: #f2dfbd;
+  background:
+    linear-gradient(135deg,
+      #81705d,
+      #262321 35%,
+      #625342 70%,
+      #211f1d);
 
-  font-family: Georgia, serif;
-  text-align: left;
+  border: 4px ridge var(--frame);
+  border-radius: 17px;
+
+  box-shadow:
+    inset 0 0 0 3px #171615,
+    inset 0 0 16px #000,
+    0 8px 15px #0009;
+
+  font-family: "IM Fell English", Georgia, serif;
+  text-align: center;
   cursor: pointer;
 
   transition:
     transform 180ms ease,
-    border-color 180ms ease,
     box-shadow 180ms ease;
 }
 
+/* Decorative inner frame */
+
+.card-ornament {
+  position: absolute;
+  z-index: -1;
+  inset: 5px;
+  border: 2px ridge var(--frame);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+/* Hover and selection effects */
+
 .game-card:hover:not(:disabled) {
-  transform: translateY(-6px);
-  border-color: #b9a078;
+  transform: translateY(-5px);
+  box-shadow:
+    0 12px 24px #000b,
+    0 0 8px var(--accent);
 }
 
 .game-card.selected {
-  transform: translateY(-8px);
-  border-color: #d9b56d;
-  box-shadow: 0 0 16px #d9b56d55;
+  transform: translateY(-7px);
+  box-shadow:
+    0 0 0 2px var(--accent),
+    0 10px 25px #000c;
 }
 
 .game-card:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
+/* ========================================
+   CARD TITLE AND ENERGY COST
+   ======================================== */
+
 .card-header {
+  position: relative;
+  z-index: 2;
+
+  flex: 0 0 12%;
+  min-height: 34px;
+
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: center;
+
+  padding: 3px 7px 3px 32px;
+
+  background:
+    linear-gradient(#5c5145,
+      #282522 55%,
+      #675745);
+
+  border: 3px ridge var(--frame);
+  box-shadow: 0 3px 5px #0009;
 }
+
+/* Ornate medieval title font */
 
 .card-name {
-  font-size: 16px;
-  font-weight: bold;
+  font-family: "Cinzel Decorative", Georgia, serif;
+  font-size: clamp(9px, 1.15vw, 14px);
+  line-height: 1.2;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  overflow-wrap: anywhere;
+
+  color: #f0dfbd;
+  text-shadow: 1px 2px 2px #000;
 }
+
+/* Energy gem */
 
 .card-cost {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
+  position: absolute;
+  z-index: 3;
+  left: -8px;
+  top: -5px;
+
+  width: 46px;
+  aspect-ratio: 1;
+
   display: grid;
   place-items: center;
 
-  color: #fff;
-  background: #454c86;
+  border: 4px ridge #b4a38a;
   border-radius: 50%;
-  font-weight: bold;
+
+  background:
+    radial-gradient(circle at 30% 25%,
+      #d6cbb5,
+      #596361 72%);
+
+  color: #f6e1bd;
+  font-family: "Cinzel Decorative", Georgia, serif;
+  font-size: 25px;
+  font-weight: 900;
+
+  -webkit-text-stroke: 0.5px #28211a;
+  text-shadow: 2px 2px 2px #000;
+  box-shadow: 0 3px 6px #000b;
 }
 
-.card-image {
-  height: 125px;
+/* ========================================
+   CARD ARTWORK
+   ======================================== */
+
+.card-art {
+  position: relative;
+  flex: 0 0 44%;
+  min-height: 0;
+
+  margin: 3px 3px 0;
   overflow: hidden;
-  border: 1px solid #514650;
-  border-radius: 6px;
-  background: #25202b;
+
+  background: #201d24;
+  border: 4px ridge var(--frame);
+  border-radius: 45% 45% 8px 8px;
+
+  box-shadow: inset 0 0 14px #000;
 }
 
-.card-image img {
+.card-art img {
   width: 100%;
   height: 100%;
+  display: block;
+
   object-fit: cover;
+  object-position: center;
 }
 
-.card-image-placeholder {
+/* Placeholder when artwork is unavailable */
+
+.card-art-placeholder {
+  width: 100%;
   height: 100%;
+
   display: grid;
   place-items: center;
-  color: #b9a078;
-  font-size: 48px;
+
+  background:
+    radial-gradient(circle,
+      var(--accent),
+      transparent 45%),
+    linear-gradient(145deg,
+      #39303d,
+      #17151b);
+
+  color: #f1d8ac;
+  font-family: "Cinzel Decorative", serif;
+  font-size: 60px;
+  text-shadow: 0 0 18px var(--accent);
 }
+
+/* ========================================
+   CATEGORY BANNER
+   ======================================== */
 
 .card-type {
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: #c9b68f;
+  position: relative;
+  z-index: 2;
+
+  flex: 0 0 10%;
+  min-height: 25px;
+  margin: -2px 13% 0;
+
+  display: grid;
+  place-items: center;
+
+  background:
+    linear-gradient(90deg,
+      #373029,
+      #786650,
+      #373029);
+
+  border: 3px ridge var(--frame);
+  box-shadow: 0 3px 5px #000a;
 }
 
+/* Medieval inscription lettering */
+
+.card-type span {
+  font-family: "MedievalSharp", serif;
+  font-size: clamp(10px, 1.1vw, 14px);
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+/* ========================================
+   AGED PARCHMENT DESCRIPTION
+   ======================================== */
+
 .card-description {
+  position: relative;
   flex: 1;
-  overflow-y: auto;
-  font-family: Arial, sans-serif;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #d0c8d0;
+  min-height: 0;
+
+  margin: 3px 2px 5px;
+  padding: 8px 7px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  background:
+    radial-gradient(ellipse at 15% 20%,
+      #e4d5b9,
+      transparent 60%),
+    radial-gradient(ellipse at 90% 80%,
+      #b4a187,
+      transparent 65%),
+    linear-gradient(135deg,
+      var(--paper),
+      #a99a80);
+
+  border: 4px ridge var(--frame);
+  box-shadow: inset 0 0 12px #68563e;
+  color: var(--paper-text);
+}
+
+/* Fine engraved parchment border */
+
+.card-description::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid #8b765b;
+  pointer-events: none;
+}
+
+/* Old manuscript typography */
+
+.card-description p {
+  position: relative;
+  margin: 0;
+
+  font-family: "IM Fell English", Georgia, serif;
+  font-size: clamp(11px, 1.15vw, 15px);
+  font-weight: 400;
+  line-height: 1.4;
+
+  color: #21180f;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .card-trait {
-  font-size: 11px;
-  color: #c9a7ef;
+  position: relative;
+  margin-top: 6px;
+
+  font-family: "MedievalSharp", serif;
+  font-size: 10px;
+  font-weight: bold;
+  color: #483451;
 }
 
-.card-stats {
-  display: flex;
-  justify-content: space-between;
-  padding-top: 8px;
-  border-top: 1px solid #514650;
-  font-weight: bold;
+/* ========================================
+   UNIT ATTACK AND HEALTH MEDALLIONS
+   ======================================== */
+
+.card-stat {
+  position: absolute;
+  z-index: 3;
+  bottom: -3px;
+
+  width: 52px;
+  aspect-ratio: 1;
+
+  display: grid;
+  place-items: center;
+
+  border: 4px ridge #a7957a;
+  border-radius: 50%;
+
+  color: #f5dfbd;
+  font-family: "Cinzel Decorative", Georgia, serif;
+  font-size: 28px;
+  font-weight: 900;
+
+  -webkit-text-stroke: 0.5px #241b15;
+  text-shadow: 2px 2px 2px #000;
+
+  box-shadow:
+    0 3px 6px #000c,
+    inset 0 0 0 2px #38302a;
 }
+
+
+/* Attack power — red */
+.attack-stat {
+  left: -2px;
+  background: radial-gradient(
+    circle at 30% 25%,
+    #ff6252,
+    #d71920 65%,
+    #790b12
+  );
+  border-color: #c49a83;
+  color: #fff0d5;
+  text-shadow: 2px 2px 2px #570000;
+  box-shadow:
+    0 3px 6px #000c,
+    inset 0 0 0 2px #761d18;
+}
+
+/* Defence / Health — green */
+.health-stat {
+  right: -2px;
+  background: radial-gradient(
+    circle at 30% 25%,
+    #75ed8a,
+    #159447 65%,
+    #07552b
+  );
+  border-color: #a7c4a7;
+  color: #f0ffe8;
+  text-shadow: 2px 2px 2px #003817;
+  box-shadow:
+    0 3px 6px #000c,
+    inset 0 0 0 2px #176036;
+}
+
+
+/* ========================================
+   UNIT CATEGORY
+   ======================================== */
 
 .card-unit {
-  border-color: #77715e;
+  --frame: #94806a;
+  --accent: #c8a77c;
+  --paper: #d0c0a5;
 }
+
+/* ========================================
+   SPELL CATEGORY
+   ======================================== */
 
 .card-spell {
-  border-color: #805a9e;
+  --frame: #8872b3;
+  --accent: #b99aff;
+  --paper: #bdb0dc;
 }
+
+.card-spell .card-header,
+.card-spell .card-type {
+  background:
+    linear-gradient(90deg,
+      #352548,
+      #74609a,
+      #352548);
+}
+
+/* ========================================
+   RELIC CATEGORY
+   ======================================== */
 
 .card-relic {
-  border-color: #9b7845;
+  --frame: #b18b45;
+  --accent: #e5bd65;
+  --paper: #d1bd95;
 }
 
+.card-relic .card-header,
+.card-relic .card-type {
+  background:
+    linear-gradient(90deg,
+      #392b18,
+      #8c6c35,
+      #392b18);
+}
+
+/* ========================================
+   SOUL CATEGORY
+   ======================================== */
+
 .card-soul {
-  border-color: #7858b5;
+  --frame: #9b83d1;
+  --accent: #c8a9ff;
+  --paper: #c5b8e5;
+}
+
+.card-soul .card-header,
+.card-soul .card-type {
+  background:
+    linear-gradient(90deg,
+      #32234b,
+      #7960a3,
+      #32234b);
+}
+
+/* ========================================
+   RESPONSIVE CARD SIZING
+   ======================================== */
+
+@media (max-width: 480px) {
+  .game-card {
+    border-radius: 12px;
+    padding: 5px;
+  }
+
+  .card-cost {
+    width: 36px;
+    font-size: 20px;
+  }
+
+  .card-header {
+    padding-left: 26px;
+  }
+
+  .card-name {
+    font-size: clamp(8px, 2.5vw, 12px);
+  }
+
+  .card-stat {
+    width: 40px;
+    font-size: 22px;
+  }
+
+  .card-description {
+    padding: 5px;
+  }
+
+  .card-description p {
+    font-size: clamp(10px, 2.8vw, 13px);
+  }
+
+  .card-type span {
+    font-size: 10px;
+  }
+}
+
+
+
+.card-art {
+  position: relative;
+  flex: 0 0 44%;
+  min-height: 0;
+  margin: 3px 3px 0;
+  overflow: hidden;
+  background: #201d24;
+  border: 4px ridge var(--frame);
+  border-radius: 45% 45% 8px 8px;
+  box-shadow: inset 0 0 14px #000;
+}
+
+.card-art img {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.card-art-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  background:
+    radial-gradient(circle, var(--accent), transparent 45%),
+    linear-gradient(145deg, #39303d, #17151b);
+  color: #f1d8ac;
+  font-family: "Cinzel Decorative", serif;
+  font-size: 14px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+
+/* Respect reduced-motion preferences */
+
+@media (prefers-reduced-motion: reduce) {
+  .game-card {
+    transition: none;
+  }
+
+  .game-card:hover:not(:disabled),
+  .game-card.selected {
+    transform: none;
+  }
 }

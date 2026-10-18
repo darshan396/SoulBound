@@ -9,19 +9,19 @@ interface CardProps {
   onClick?: (card: CardData) => void;
 }
 
+const typeLabels: Record<CardData["type"], string> = {
+  unit: "UNIT",
+  spell: "SPELL",
+  relic: "RELIC",
+  soul: "SOUL",
+};
+
 export default function Card({
   card,
   selected = false,
   disabled = false,
   onClick,
 }: CardProps) {
-  const typeLabels = {
-    unit: "UNIT",
-    spell: "SPELL",
-    relic: "RELIC",
-    soul: "SOUL",
-  };
-
   return (
     <button
       type="button"
@@ -31,42 +31,74 @@ export default function Card({
       onClick={() => onClick?.(card)}
       disabled={disabled}
       aria-pressed={selected}
-      aria-label={`${card.name}, ${typeLabels[card.type]}, ${card.cost} energy`}
+      aria-label={`${card.name}, ${typeLabels[card.type]}, cost ${card.cost}`}
     >
+      <div className="card-ornament" />
+
       <header className="card-header">
         <span className="card-name">{card.name}</span>
         <span className="card-cost">{card.cost}</span>
       </header>
 
-      <div className="card-image">
+      <div className="card-art">
         {card.image ? (
-          <img src={card.image} alt={card.name} />
-        ) : (
-          <div className="card-image-placeholder">
-            {card.name.slice(0, 1)}
-          </div>
-        )}
-      </div>
+          <img
+            src={card.image}
+            alt={`${card.name} artwork`}
+            onError={(event) => {
+              console.error(
+                `Failed to load artwork for "${card.name}":`,
+                event.currentTarget.src
+              );
 
-      <span className="card-type">
-        {typeLabels[card.type]}
-      </span>
+              event.currentTarget.style.display = "none";
 
-      <div className="card-description">
-        {card.description}
-      </div>
+              const fallback =
+                event.currentTarget.parentElement?.querySelector(
+                  ".card-art-fallback"
+                );
 
-      {card.soulTrait && (
-        <div className="card-trait">
-          Trait: {card.soulTrait}
+              if (fallback instanceof HTMLElement) {
+                fallback.style.display = "grid";
+              }
+            }}
+          />
+        ) : null}
+
+        <div
+          className="card-art-fallback"
+          style={{
+            display: card.image ? "none" : "grid",
+          }}
+        >
+          <span>{card.name}</span>
         </div>
-      )}
+      </div>
+
+      <div className="card-type">
+        <span>{typeLabels[card.type]}</span>
+      </div>
+
+      <section className="card-description">
+        <p>{card.description}</p>
+
+        {card.soulTrait && (
+          <span className="card-trait">
+            {card.soulTrait} Trait
+          </span>
+        )}
+      </section>
 
       {card.type === "unit" && (
-        <footer className="card-stats">
-          <span>ATK {card.attack ?? 0}</span>
-          <span>HP {card.health ?? 0}</span>
-        </footer>
+        <>
+          <div className="card-stat attack-stat">
+            {card.attack ?? 0}
+          </div>
+
+          <div className="card-stat health-stat">
+            {card.health ?? 0}
+          </div>
+        </>
       )}
     </button>
   );

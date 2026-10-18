@@ -1,22 +1,50 @@
-
 .game {
   min-height: 100vh;
   padding: 32px;
   color: #eee8df;
-  background: #100e13;
+  background:
+    radial-gradient(ellipse at center, #29272a, #111114 75%);
 }
 
 .game h1 {
-  letter-spacing: 6px;
+  font-family: "Cinzel Decorative", serif;
+  font-weight: 900;
+  letter-spacing: 5px;
+  text-align: center;
+  color: #d7bd91;
+  text-shadow: 3px 3px 4px #000;
+}
+.game > p {
+  text-align: center;
 }
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(190px, 1fr)
-  );
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
   align-items: start;
-  margin-top: 28px;
+  width: min(100%, 1200px);
+  margin: 28px auto;
+}
+
+.selected-card {
+  color: #d9b56d;
+}
+
+@media (max-width: 900px) {
+  .card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .game {
+    padding: 16px;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
 }
