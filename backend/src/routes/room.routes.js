@@ -22,6 +22,7 @@ router.get("/:id", (req, res) => {
     message: "Get room status not implemented yet.",
     roomId: req.params.id,
   });
+  
 });
 
 // Start when both players are ready
