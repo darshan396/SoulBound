@@ -1,1 +1,4 @@
 node_modules/
+
+# Ignore frontend card artwork
+/frontend/src/assets/cardImages/
