@@ -1,0 +1,22 @@
+
+.game {
+  min-height: 100vh;
+  padding: 32px;
+  color: #eee8df;
+  background: #100e13;
+}
+
+.game h1 {
+  letter-spacing: 6px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(190px, 1fr)
+  );
+  gap: 24px;
+  align-items: start;
+  margin-top: 28px;
+}
