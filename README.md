@@ -129,7 +129,7 @@ Use the response returned by the running server to verify its current status.
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repository-url>
+git clone git@github.com:darshan396/Soulbound.git
 cd soulbound
 ```
 
