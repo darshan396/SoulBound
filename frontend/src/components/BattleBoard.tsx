@@ -99,6 +99,16 @@ export default function BattleBoard() {
       id: `${id}-hand-${index}`,
     }))
   );
+  const [enemyDeck, setEnemyDeck] = useState<string[]>(() => shuffle(STARTING_DECK).slice(5));
+  const [enemyHand, setEnemyHand] = useState<GameCard[]>(() =>
+    shuffle(STARTING_DECK).slice(0, 5).map((id, index) => ({
+      ...CARD_LIBRARY.find((card) => card.id === id)!,
+      id: `enemy-${id}-${index}`,
+    }))
+  );
+  const [enemyMaxMana, setEnemyMaxMana] = useState(1);
+  const [enemyMana, setEnemyMana] = useState(1);
+  const [enemyRelics, setEnemyRelics] = useState<string[]>([]);
   const [discard, setDiscard] = useState<GameCard[]>([]);
   const [playerUnits, setPlayerUnits] = useState<UnitOnBoard[]>([
     makeUnit(CARD_LIBRARY[0], true),
@@ -345,35 +355,150 @@ export default function BattleBoard() {
   }
 
   function endTurn() {
-    if (gameOver) return;
+    if (gameOver || activePlayer !== "player") return;
+
     setSelectedCardId(null);
     setPendingAction(null);
+    setActivePlayer("opponent");
+    log("Malakor's turn begins.");
 
-    if (activePlayer === "player") {
-      setActivePlayer("opponent");
-      log("Opponent's turn.");
-      // Simple local opponent: ready units attack the player's hero.
-      let damage = 0;
-      enemyUnits.forEach((unit) => {
-        if (unit.canAttack && !unit.hasAttacked) damage += unit.attack ?? 0;
-      });
-      if (damage > 0) {
-        const nextHealth = Math.max(0, playerHealth - damage);
-        setPlayerHealth(nextHealth);
-        setEnemyUnits((current) => current.map((unit) => ({ ...unit, hasAttacked: true })));
-        log(`Enemy units deal ${damage} damage to you.`);
-        if (finishGameIfNeeded(nextHealth, enemyHealth)) return;
+    // AI receives its next mana point, up to the 10-mana cap.
+    const nextEnemyMaxMana = Math.min(10, enemyMaxMana + 1);
+    let aiMana = nextEnemyMaxMana;
+    let aiUnits = enemyUnits.map((unit) => ({ ...unit, canAttack: true, hasAttacked: false }));
+    let aiHand = [...enemyHand];
+    let aiDeck = [...enemyDeck];
+    let aiDiscard = [...discard];
+    let aiHealth = enemyHealth;
+    let yourHealth = playerHealth;
+    const aiRelics = [...enemyRelics];
+    const aiLogs: string[] = [];
+    let updatedPlayerUnits = [...playerUnits];
+
+    const aiDraw = () => {
+      if (aiHand.length >= 10 || aiDeck.length === 0) return;
+      const [nextId, ...remaining] = aiDeck;
+      aiDeck = remaining;
+      const definition = CARD_LIBRARY.find((card) => card.id === nextId);
+      if (definition) aiHand.push({ ...definition, id: `enemy-${nextId}-turn-${turn}-${aiHand.length}` });
+    };
+
+    // Play affordable cards in priority order: removal, lethal damage, units,
+    // direct damage, draw, then relics.
+    for (let plays = 0; plays < 10; plays += 1) {
+      const affordable = aiHand.filter((card) => card.cost <= aiMana);
+      if (affordable.length === 0) break;
+
+      const removal = affordable.find((card) => card.id === "soul-rupture" && updatedPlayerUnits.length > 0);
+      const lethalSoulfire = aiHealth <= 6 ? affordable.find((card) => card.id === "soulfire") : undefined;
+      const unitCard = affordable.find((card) => card.kind === "unit");
+      const directDamage = affordable.find((card) => card.id === "soulfire");
+      const drawSpell = affordable.find((card) => card.id === "soul-mend");
+      const relic = affordable.find((card) => card.kind === "relic" && !aiRelics.includes(card.id));
+      const chosen = removal ?? lethalSoulfire ?? unitCard ?? directDamage ?? drawSpell ?? relic;
+      if (!chosen) break;
+
+      aiMana -= chosen.cost;
+      aiHand = aiHand.filter((card) => card.id !== chosen.id);
+
+      if (chosen.id === "soul-rupture" && updatedPlayerUnits.length > 0) {
+        const target = [...updatedPlayerUnits].sort((a, b) => a.currentHealth - b.currentHealth)[0];
+        const remainingHealth = target.currentHealth - 5;
+        updatedPlayerUnits = updatedPlayerUnits.flatMap((unit) =>
+          unit.id !== target.id ? [unit] :
+            remainingHealth > 0 ? [{ ...unit, currentHealth: remainingHealth }] : []
+        );
+        if (remainingHealth <= 0) aiDiscard.push(target);
+        aiDiscard.push(chosen);
+        aiLogs.push(remainingHealth > 0
+          ? `Malakor uses Soul Rupture on ${target.name}.`
+          : `Malakor destroys ${target.name} with Soul Rupture.`);
+      } else if (chosen.id === "soulfire") {
+        yourHealth = Math.max(0, yourHealth - 3);
+        aiDiscard.push(chosen);
+        aiLogs.push("Malakor casts Soulfire for 3 damage.");
+      } else if (chosen.kind === "unit") {
+        aiUnits.push(makeUnit(chosen, false));
+        aiLogs.push(`Malakor summons ${chosen.name}.`);
+      } else if (chosen.id === "soul-mend") {
+        aiDiscard.push(chosen);
+        aiDraw();
+        aiLogs.push("Malakor uses Soul Mend to draw a card.");
+      } else if (chosen.kind === "relic") {
+        aiRelics.push(chosen.id);
+        aiLogs.push(`Malakor activates ${chosen.name}.`);
+      } else {
+        aiDiscard.push(chosen);
       }
-      setTurn((current) => current + 1);
-      setActivePlayer("player");
-      setMaxMana((current) => Math.min(10, current + 1));
-      setMana(Math.min(10, maxMana + 1));
-      setPlayerUnits((current) => current.map((unit) => ({ ...unit, canAttack: true, hasAttacked: false })));
-      setEnemyUnits((current) => current.map((unit) => ({ ...unit, canAttack: true, hasAttacked: false })));
-      setInheritedThisTurn(false);
-      drawCard();
-      log(`Turn ${turn + 1} begins. Mana refreshed.`);
+
+      if (yourHealth <= 0) break;
     }
+
+    // Enemy units trade into a friendly unit when the trade kills the attacker;
+    // otherwise they attack the hero. Newly summoned units cannot attack yet.
+    const survivingEnemyUnits: UnitOnBoard[] = [];
+    for (const attacker of aiUnits) {
+      if (!attacker.canAttack || attacker.hasAttacked) {
+        survivingEnemyUnits.push(attacker);
+        continue;
+      }
+
+      const tradeTarget = updatedPlayerUnits
+        .filter((unit) => (unit.attack ?? 0) >= attacker.currentHealth)
+        .sort((a, b) => a.currentHealth - b.currentHealth)[0];
+
+      if (tradeTarget) {
+        const attackerHealth = attacker.currentHealth - (tradeTarget.attack ?? 0);
+        const targetHealth = tradeTarget.currentHealth - (attacker.attack ?? 0);
+        updatedPlayerUnits = updatedPlayerUnits.flatMap((unit) =>
+          unit.id !== tradeTarget.id ? [unit] :
+            targetHealth > 0 ? [{ ...unit, currentHealth: targetHealth }] : []
+        );
+        if (targetHealth <= 0) aiDiscard.push(tradeTarget);
+        aiLogs.push(`${attacker.name} attacks ${tradeTarget.name}.`);
+        if (attackerHealth > 0) {
+          survivingEnemyUnits.push({ ...attacker, currentHealth: attackerHealth, hasAttacked: true });
+        } else {
+          aiDiscard.push(attacker);
+          aiLogs.push(`${attacker.name} is destroyed in combat.`);
+        }
+      } else {
+        yourHealth = Math.max(0, yourHealth - (attacker.attack ?? 0));
+        survivingEnemyUnits.push({ ...attacker, hasAttacked: true });
+        aiLogs.push(`${attacker.name} attacks you for ${attacker.attack ?? 0} damage.`);
+      }
+      if (yourHealth <= 0) break;
+    }
+
+    setEnemyUnits(survivingEnemyUnits);
+    setPlayerUnits(updatedPlayerUnits);
+    setEnemyHand(aiHand);
+    setEnemyDeck(aiDeck);
+    setEnemyMana(aiMana);
+    setEnemyMaxMana(nextEnemyMaxMana);
+    setEnemyRelics(aiRelics);
+    setEnemyHealth(aiHealth);
+    setPlayerHealth(yourHealth);
+    setDiscard(aiDiscard);
+    setLogs((current) => [...aiLogs.reverse(), ...current].slice(0, 6));
+
+    if (yourHealth <= 0 || aiHealth <= 0) {
+      setGameOver(true);
+      log(aiHealth <= 0 ? "Victory! Malakor has fallen." : "Defeat. Your soul has been claimed.");
+      return;
+    }
+
+    const nextMaxMana = Math.min(10, maxMana + 1);
+    setTurn((current) => current + 1);
+    setMaxMana(nextMaxMana);
+    setMana(nextMaxMana);
+    setPlayerUnits((current) => current.map((unit) => ({ ...unit, canAttack: true, hasAttacked: false })));
+    setEnemyUnits((current) => current.map((unit) => ({ ...unit, canAttack: true, hasAttacked: false })));
+    setInheritedThisTurn(false);
+    setActivePlayer("player");
+
+    if (hand.length < 10 && deck.length > 0) drawCard();
+    log(`Your turn ${turn + 1} begins. Mana refreshed.`);
   }
 
   function onHandDragStart(card: GameCard, event: DragEvent<HTMLButtonElement>) {
@@ -487,7 +612,7 @@ export default function BattleBoard() {
       <div className="arena-overlay" />
 
       <header className="opponent-area">
-        <PlayerHUD name="Malakor the Undying" health={enemyHealth} mana={Math.min(10, turn)} maxMana={Math.min(10, turn)} opponent />
+        <PlayerHUD name="Malakor the Undying" health={enemyHealth} mana={enemyMana} maxMana={enemyMaxMana} opponent />
         <div className="opponent-hand">
           {[0, 1, 2, 3, 4].map((card) => <div className="card-back" key={card}><span>✦</span></div>)}
         </div>
