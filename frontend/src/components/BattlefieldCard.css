@@ -1,0 +1,162 @@
+.battlefield-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    width: clamp(82px, 9vw, 112px);
+    padding: 0;
+    overflow: hidden;
+    color: #ead8b3;
+    font-family: "Cinzel", Georgia, serif;
+    background: #1b1510;
+    border: 2px solid #806442;
+    border-radius: 6px;
+    box-shadow: 0 5px 12px #000b;
+    cursor: pointer;
+    transition:
+        transform 160ms ease,
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.battlefield-card-art {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 0.68;
+    overflow: hidden;
+    background: #17110d;
+}
+
+.battlefield-card-art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.battlefield-card-cost,
+.battlefield-card-attack,
+.battlefield-card-health {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 23px;
+    height: 23px;
+    color: #fff3d5;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid #e0c38c;
+    border-radius: 50%;
+    text-shadow: 0 1px 2px #000;
+    box-shadow: 0 2px 4px #000b;
+}
+
+.battlefield-card-cost {
+    top: 4px;
+    left: 4px;
+    background: #244d83;
+}
+
+.battlefield-card-attack {
+    bottom: 5px;
+    left: 4px;
+    background: #a76b24;
+}
+
+.battlefield-card-health {
+    right: 4px;
+    bottom: 5px;
+    background: #862b28;
+}
+
+.battlefield-card-name {
+    min-height: 30px;
+    display: grid;
+    place-items: center;
+    padding: 5px 3px;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    overflow-wrap: anywhere;
+    background: linear-gradient(#302319, #17110d);
+}
+
+.battlefield-card:hover:not(:disabled) {
+    z-index: 3;
+    transform: translateY(-6px);
+    border-color: #d6b879;
+}
+
+.battlefield-card.selected {
+    border-color: #f5d37b;
+    box-shadow:
+        0 0 0 2px #a87934,
+        0 0 18px #e8b84780;
+    transform: translateY(-7px);
+}
+
+.battlefield-card.targetable {
+    border-color: #b84e46;
+}
+
+.battlefield-card.targetable:hover:not(:disabled) {
+    box-shadow: 0 0 18px #e34d3d99;
+}
+
+.battlefield-card.disabled {
+    cursor: not-allowed;
+    filter: grayscale(0.6) brightness(0.65);
+}
+
+.battlefield-card-status {
+    display: block;
+    padding: 5px 2px;
+    color: #f8dfa1;
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    text-align: center;
+    background: #59401f;
+}
+
+.battlefield-card-status.target-status {
+    color: #ffe0d8;
+    background: #852d28;
+}
+
+@media (max-width: 600px) {
+    .battlefield-card {
+        width: 82px;
+    }
+
+    .battlefield-card-name {
+        font-size: 9px;
+    }
+
+    .battlefield-card-cost,
+    .battlefield-card-attack,
+    .battlefield-card-health {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+    }
+}
+
+.battlefield-card.can-drag {
+  cursor: grab;
+  touch-action: none;
+}
+
+.battlefield-card.can-drag:active {
+  cursor: grabbing;
+}
+
+.battlefield-card.is-dragging {
+  opacity: 0.35;
+  filter: saturate(0.65);
+}
+
+.battlefield-card-art img {
+  -webkit-user-drag: none;
+  user-select: none;
+}

@@ -26,7 +26,6 @@ app.use("/api/games", gameRoutes);
 app.use("/api/rules", rulesRoutes);
 
 // Health check
-
 app.get("/api/health", (req, res) => {
   res.json({
     message: "Soulbound backend is running",
