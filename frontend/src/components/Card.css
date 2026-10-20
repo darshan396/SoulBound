@@ -343,12 +343,10 @@
 /* Attack power — red */
 .attack-stat {
   left: -2px;
-  background: radial-gradient(
-    circle at 30% 25%,
-    #ff6252,
-    #d71920 65%,
-    #790b12
-  );
+  background: radial-gradient(circle at 30% 25%,
+      #ff6252,
+      #d71920 65%,
+      #790b12);
   border-color: #c49a83;
   color: #fff0d5;
   text-shadow: 2px 2px 2px #570000;
@@ -360,12 +358,10 @@
 /* Defence / Health — green */
 .health-stat {
   right: -2px;
-  background: radial-gradient(
-    circle at 30% 25%,
-    #75ed8a,
-    #159447 65%,
-    #07552b
-  );
+  background: radial-gradient(circle at 30% 25%,
+      #75ed8a,
+      #159447 65%,
+      #07552b);
   border-color: #a7c4a7;
   color: #f0ffe8;
   text-shadow: 2px 2px 2px #003817;
@@ -535,5 +531,32 @@
   .game-card:hover:not(:disabled),
   .game-card.selected {
     transform: none;
+  }
+}
+
+/* Drag-and-drop support */
+.game-card.draggable {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: element;
+}
+
+.game-card.draggable:active {
+  cursor: grabbing;
+}
+
+.game-card.draggable:focus-visible {
+  outline: 2px solid #e5bd65;
+  outline-offset: 3px;
+}
+
+.game-card.dragging {
+  opacity: 0.55;
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-card {
+    transition: none;
   }
 }
