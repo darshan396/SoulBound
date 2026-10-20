@@ -9,7 +9,7 @@ Soulbound is a dark-fantasy card game concept in which players use Units, Spells
 The repository currently contains a React and TypeScript frontend and a Node.js and Express backend. Development is focused on the card UI, backend API foundations, and organizing server-side routes.
 
 ## Features
-
+![Soulbound](image.png)
 ### Frontend
 - Reusable card component built with React and TypeScript.
 - Four card types: Units, Spells, Relics, and Souls.
